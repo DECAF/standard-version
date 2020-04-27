@@ -55,7 +55,7 @@ class Handler
     }
 
     /**
-     * @param  Composer  $composer
+     * @param Composer $composer
      */
     public function setComposer(Composer $composer): void
     {
@@ -71,13 +71,12 @@ class Handler
     }
 
     /**
-     * @param  bool  $modifyChangelog
+     * @param bool $modifyChangelog
      */
     public function setModifyChangelog(bool $modifyChangelog): void
     {
         $this->modifyChangelog = $modifyChangelog;
     }
-
 
     /**
      * @return bool
@@ -88,7 +87,7 @@ class Handler
     }
 
     /**
-     * @param  bool  $tagVersion
+     * @param bool $tagVersion
      */
     public function setTagVersion(bool $tagVersion): void
     {
@@ -104,7 +103,7 @@ class Handler
     }
 
     /**
-     * @param  bool  $gitPush
+     * @param bool $gitPush
      */
     public function setGitPush(bool $gitPush): void
     {
@@ -120,7 +119,7 @@ class Handler
     }
 
     /**
-     * @param  bool  $dryRun
+     * @param bool $dryRun
      */
     public function setDryRun(bool $dryRun): void
     {
@@ -136,7 +135,7 @@ class Handler
     }
 
     /**
-     * @param  InputInterface  $input
+     * @param InputInterface $input
      */
     public function setInput($input): void
     {
@@ -152,20 +151,19 @@ class Handler
     }
 
     /**
-     * @param  OutputInterface  $output
+     * @param OutputInterface $output
      */
     public function setOutput($output): void
     {
         $this->output = $output;
     }
 
-
     /**
      * @throws Exception
      */
     public function process(): void
     {
-        $output   = $this->getOutput();
+        $output = $this->getOutput();
         $composer = $this->getComposer();
 
         $tagPrefix = '';
@@ -188,14 +186,14 @@ class Handler
         $currentBranch = $git->getCurrentBranch();
 
         if ($currentBranch !== 'master') {
-            throw new Exception('Please checkout "master" branch first! You are currently on "' . $currentBranch . '"');
+            throw new Exception('Please checkout "master" branch first! You are currently on "'.$currentBranch.'"');
         }
 
         $latestTag = $git->getLatestTag();
 
         $currentVersion = $git->parseTag($latestTag);
 
-        $output->writeln('current version: ' . $currentVersion->getVersionString($git->getTagPrefix()));
+        $output->writeln('current version: '.$currentVersion->getVersionString($git->getTagPrefix()));
 
         $gitHistory = $git->getHistory($currentVersion);
 
@@ -203,7 +201,7 @@ class Handler
 
         $nextVersion = $currentVersion->getNextVersion($history);
 
-        $output->writeln('next version...: ' . $nextVersion->getVersionString($git->getTagPrefix()));
+        $output->writeln('next version...: '.$nextVersion->getVersionString($git->getTagPrefix()));
 
         $markdown = new Markdown();
         $markdown = $markdown->generate($repository, $currentVersion, $nextVersion, $history);
@@ -216,20 +214,20 @@ class Handler
             if ($this->getModifyChangelog()) {
                 if (!file_exists('CHANGELOG.md')) {
                     $output->writeln('no CHANGELOG.md found. Creating default template');
-                    copy(__DIR__ . '/../template/CHANGELOG.md', 'CHANGELOG.md');
+                    copy(__DIR__.'/../template/CHANGELOG.md', 'CHANGELOG.md');
 
                     $changelog = file_get_contents('CHANGELOG.md');
 
-                    $content = $changelog . $markdown;
+                    $content = $changelog.$markdown;
                 } else {
                     $changelog = file_get_contents('CHANGELOG.md');
 
                     // check if version already in Changelog
-                    if (preg_match('#<a name="' . $nextVersion->getVersionString() . '"></a>#', $changelog)) {
-                        throw new Exception('version "' . $nextVersion->getVersionString() . '" already exists in CHANGELOG.md!');
+                    if (preg_match('#<a name="'.$nextVersion->getVersionString().'"></a>#', $changelog)) {
+                        throw new Exception('version "'.$nextVersion->getVersionString().'" already exists in CHANGELOG.md!');
                     }
 
-                    $content = preg_replace('/<a name=/', $markdown . '<a name=', $changelog, 1);
+                    $content = preg_replace('/<a name=/', $markdown.'<a name=', $changelog, 1);
                 }
 
                 file_put_contents('CHANGELOG.md', $content);
@@ -246,23 +244,23 @@ class Handler
             }
 
             if ($this->getTagVersion()) {
-                $tag = $git->getTagPrefix() . $nextVersion->getVersionString();
+                $tag = $git->getTagPrefix().$nextVersion->getVersionString();
                 $git->tag($tag);
 
-                $output->writeln('tagged as version: ' . $tag);
+                $output->writeln('tagged as version: '.$tag);
             }
 
             if ($this->getGitPush()) {
                 $remoteOrigin = $git->getRemoteOrigin();
-                $tag          = $git->getTagPrefix() . $nextVersion->getVersionString();
+                $tag = $git->getTagPrefix().$nextVersion->getVersionString();
 
                 $git->pushTag($tag);
 
-                $output->writeln('pushed tag: ' . $tag);
+                $output->writeln('pushed tag: '.$tag);
 
                 $git->push();
 
-                $output->writeln('pushed to origin: ' . $remoteOrigin);
+                $output->writeln('pushed to origin: '.$remoteOrigin);
             }
         }
     }

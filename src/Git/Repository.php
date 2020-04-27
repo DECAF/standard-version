@@ -1,12 +1,9 @@
 <?php
 
-
 namespace Decaf\StandardVersion\Git;
 
-use Composer\Factory;
 use Decaf\StandardVersion\Providers\None;
 use Exception;
-
 
 class Repository
 {
@@ -26,7 +23,7 @@ class Repository
     }
 
     /**
-     * @param  string  $url
+     * @param string $url
      *
      * @throws Exception
      */
@@ -36,16 +33,16 @@ class Repository
 
         if (preg_match($pattern, $url, $match)) {
             $this->host = $match['host'];
-            $this->org  = $match['org'];
+            $this->org = $match['org'];
             $this->name = $match['repo'];
         } else {
-            throw new Exception('unable to parse git url: ' . $url);
+            throw new Exception('unable to parse git url: '.$url);
         }
     }
 
     /**
-     * @param  string  $version1
-     * @param  string  $version2
+     * @param string $version1
+     * @param string $version2
      *
      * @return string
      */
@@ -62,7 +59,7 @@ class Repository
     }
 
     /**
-     * @param  string  $ref
+     * @param string $ref
      *
      * @return string
      */
@@ -85,7 +82,7 @@ class Repository
         $url = $this->ticketUrl;
 
         if (!empty($url)) {
-            $url = rtrim($url, '/') . '/';
+            $url = rtrim($url, '/').'/';
         }
 
         return $url;
