@@ -1,0 +1,28 @@
+{
+  "name": "decaf/standard-version",
+  "description": "Composer standard-version package",
+  "type": "composer-plugin",
+  "keywords": [
+    "decaf",
+    "standard-version",
+    "composer"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Stefan Ullrich",
+      "email": "su@decaf.de"
+    }
+  ],
+  "require": {
+    "composer-plugin-api": "^1.1"
+  },
+  "extra": {
+    "class": "Decaf\\StandardVersion\\Composer\\Plugin"
+  },
+  "autoload": {
+    "psr-4": {
+      "Decaf\\StandardVersion\\": "src/"
+    }
+  }
+}
