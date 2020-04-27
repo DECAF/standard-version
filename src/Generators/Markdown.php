@@ -13,7 +13,7 @@ class Markdown
     const FIXES = 'FIXES';
     const REFACTOR = 'REFACTOR';
 
-    protected $repository;
+    protected Repository $repository;
 
     /**
      * @param  Repository  $repository
