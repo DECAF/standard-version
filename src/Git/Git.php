@@ -39,13 +39,12 @@ class Git
     }
 
     /**
-     * @param  string  $tagPrefix
+     * @param string $tagPrefix
      */
     public function setTagPrefix(string $tagPrefix): void
     {
         $this->tagPrefix = $tagPrefix;
     }
-
 
     /**
      * @return InputInterface
@@ -56,7 +55,7 @@ class Git
     }
 
     /**
-     * @param  InputInterface  $input
+     * @param InputInterface $input
      */
     public function setInput(InputInterface $input): void
     {
@@ -72,7 +71,7 @@ class Git
     }
 
     /**
-     * @param  OutputInterface  $output
+     * @param OutputInterface $output
      */
     public function setOutput(OutputInterface $output): void
     {
@@ -88,7 +87,7 @@ class Git
     }
 
     /**
-     * @param  Repository  $repository
+     * @param Repository $repository
      */
     public function setRepository(Repository $repository): void
     {
@@ -96,8 +95,9 @@ class Git
     }
 
     /**
-     * @return Repository
      * @throws Exception
+     *
+     * @return Repository
      */
     public function initRepository($extra): Repository
     {
@@ -106,10 +106,10 @@ class Git
         $remoteOrigin = $this->getRemoteOrigin();
 
         switch (true) {
-            case (strpos($remoteOrigin, 'github.com')):
+            case strpos($remoteOrigin, 'github.com'):
                 $this->repository->provider = Github::class;
                 break;
-            case (strpos($remoteOrigin, 'bitbucket.org')):
+            case strpos($remoteOrigin, 'bitbucket.org'):
                 $this->repository->provider = Bitbucket::class;
                 break;
         }
@@ -125,13 +125,13 @@ class Git
     public function checkCredentials(): void
     {
         $command = 'git config --global user.email';
-        $state1  = $this->exec($command);
+        $state1 = $this->exec($command);
 
         $command = 'git config --global user.name';
-        $state2  = $this->exec($command);
+        $state2 = $this->exec($command);
 
         if ($state1->exitCode !== 0 || $state2->exitCode !== 0) {
-            throw new Exception('Please set your git credentials:' . PHP_EOL . '   git config --global user.email "foo@bar"' . PHP_EOL . '   git config --global user.name "Foo Bar"');
+            throw new Exception('Please set your git credentials:'.PHP_EOL.'   git config --global user.email "foo@bar"'.PHP_EOL.'   git config --global user.name "Foo Bar"');
         }
     }
 
@@ -141,7 +141,7 @@ class Git
     public function checkWorkingCopy(): void
     {
         $command = 'git status';
-        $state   = $this->exec($command);
+        $state = $this->exec($command);
 
         $modified = [];
         foreach ($state->output as $line) {
@@ -150,162 +150,169 @@ class Git
             }
         }
 
-
-        if (sizeof($modified) > 0) {
-            throw new Exception('working copy contains modified files:' . PHP_EOL . implode(PHP_EOL, $modified));
+        if (count($modified) > 0) {
+            throw new Exception('working copy contains modified files:'.PHP_EOL.implode(PHP_EOL, $modified));
         }
     }
 
     /**
-     * @return string
      * @throws Exception
+     *
+     * @return string
      */
     public function getRemoteOrigin(): string
     {
         $command = 'git config --get remote.origin.url';
-        $state   = $this->exec($command, 'unable to get current branch');
+        $state = $this->exec($command, 'unable to get current branch');
 
         return $state->last;
     }
 
     /**
-     * @return string
      * @throws Exception
+     *
+     * @return string
      */
     public function getCurrentBranch(): string
     {
         $command = 'git branch';
-        $state   = $this->exec($command, 'unable to get current branch');
+        $state = $this->exec($command, 'unable to get current branch');
 
         return substr($state->last, 2);
     }
 
     /**
-     * @param  string  $prefix
+     * @param string $prefix
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function getLatestTag(): string
     {
-
         $command = 'git describe --tags';
-        $state   = $this->exec($command);
+        $state = $this->exec($command);
 
         switch (true) {
-            case ($state->exitCode === 0):
+            case $state->exitCode === 0:
                 $tag = $state->last;
                 break;
-            case ($state->exitCode === 127):
+            case $state->exitCode === 127:
                 throw new Exception('unable to get tag information');
                 break;
             default:
-                $tag = $this->getTagPrefix() . '0.0.0';
+                $tag = $this->getTagPrefix().'0.0.0';
         }
 
         return $tag;
     }
 
     /**
-     * @param  Version  $version
+     * @param Version $version
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function getHistory(Version $version): State
     {
         $gitVersion = 'HEAD';
 
         if ($version->majorVersion > 0 || $version->minorVersion > 0 || $version->patchLevel > 0) {
-            $gitVersion = $this->getTagPrefix() . $version->majorVersion . '.' . $version->minorVersion . '.' . $version->patchLevel . '..HEAD';
+            $gitVersion = $this->getTagPrefix().$version->majorVersion.'.'.$version->minorVersion.'.'.$version->patchLevel.'..HEAD';
         }
 
-        $command = 'git log ' . $gitVersion . ' --oneline';
-        $state   = $this->exec($command, 'unable to get history');
+        $command = 'git log '.$gitVersion.' --oneline';
+        $state = $this->exec($command, 'unable to get history');
 
         return $state;
     }
 
     /**
-     * @param  string  $file
+     * @param string $file
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function add(string $file): string
     {
-        $command = 'git add ' . $file;
-        $state   = $this->exec($command);
+        $command = 'git add '.$file;
+        $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
-            throw new Exception('unable to add file: ' . $file);
+            throw new Exception('unable to add file: '.$file);
         }
 
         return $state->last;
     }
 
     /**
-     * @param  string  $message
+     * @param string $message
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function commit(string $message): string
     {
-        $command = 'git commit -m "' . $message . '"';
-        $state   = $this->exec($command);
+        $command = 'git commit -m "'.$message.'"';
+        $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
-            throw new Exception('unable to commit: ' . $message);
+            throw new Exception('unable to commit: '.$message);
         }
 
         return $state->last;
     }
 
     /**
-     * @param  string  $tag
+     * @param string $tag
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function tag(string $tag): string
     {
-        $command = 'git tag -a ' . $tag . ' -m "bump version ' . $tag . '"';
-        $state   = $this->exec($command);
+        $command = 'git tag -a '.$tag.' -m "bump version '.$tag.'"';
+        $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
-            throw new Exception('unable to create tag: ' . $tag);
+            throw new Exception('unable to create tag: '.$tag);
         }
 
         return $state->last;
     }
 
     /**
-     * @param  string  $tag
+     * @param string $tag
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function pushTag(string $tag): string
     {
-        $command = 'git push origin ' . $tag;
-        $state   = $this->exec($command);
+        $command = 'git push origin '.$tag;
+        $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
-            throw new Exception('unable to push tag: ' . $tag);
+            throw new Exception('unable to push tag: '.$tag);
         }
 
         return $state->last;
     }
 
     /**
-     * @return string
      * @throws Exception
+     *
+     * @return string
      */
     public function push(): string
     {
         $command = 'git push origin';
-        $state   = $this->exec($command);
+        $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
             throw new Exception('unable to push to origin');
@@ -316,10 +323,11 @@ class Git
 
     /**
      * @param $command
-     * @param  null  $errorMsg
+     * @param null $errorMsg
+     *
+     * @throws Exception
      *
      * @return State
-     * @throws Exception
      */
     protected function exec($command, $errorMsg = null)
     {
@@ -327,23 +335,24 @@ class Git
 
         $last = @exec($command, $output, $exitCode);
 
-        $state           = new State();
-        $state->output   = $output;
-        $state->last     = $last;
+        $state = new State();
+        $state->output = $output;
+        $state->last = $last;
         $state->exitCode = $exitCode;
 
         if ($errorMsg && empty($state->output)) {
-            throw new Exception($errorMsg . ' (' . $command . ')');
+            throw new Exception($errorMsg.' ('.$command.')');
         }
 
         return $state;
     }
 
     /**
-     * @param  string  $tag
+     * @param string $tag
+     *
+     * @throws Exception
      *
      * @return Version
-     * @throws Exception
      */
     public function parseTag(string $tag): Version
     {
@@ -359,17 +368,17 @@ class Git
         $pattern .= '$/';
 
         if (!preg_match($pattern, $tag, $matches)) {
-            throw new Exception('Unable to parse tag: ' . $tag);
+            throw new Exception('Unable to parse tag: '.$tag);
         }
 
         $version = new Version();
 
-        $version->tagPrefix    = $matches['tagPrefix'] ?? null;
+        $version->tagPrefix = $matches['tagPrefix'] ?? null;
         $version->majorVersion = (int) $matches['majorVersion'];
         $version->minorVersion = (int) $matches['minorVersion'];
-        $version->patchLevel   = (int) $matches['patchLevel'];
-        $version->preRelease   = $matches['preRelease'] ?? null;
-        $version->build        = $matches['build'] ?? null;
+        $version->patchLevel = (int) $matches['patchLevel'];
+        $version->preRelease = $matches['preRelease'] ?? null;
+        $version->build = $matches['build'] ?? null;
 
         $this->tagPrefix = $version->tagPrefix;
 
@@ -377,10 +386,11 @@ class Git
     }
 
     /**
-     * @param  array  $history
+     * @param array $history
+     *
+     * @throws Exception
      *
      * @return array
-     * @throws Exception
      */
     public function parseHistory(array $history)
     {
@@ -394,20 +404,20 @@ class Git
             $pattern = '/^(?<ref>[^ ]+) (?<type>[a-z]+)(?<scope>\([a-z0-9-_.]+\))?:(?<text>.+)/i';
 
             if (preg_match($pattern, $v, $match)) {
-                $historyItem        = new HistoryItem();
-                $historyItem->ref   = $match['ref'];
-                $historyItem->type  = $match['type'];
+                $historyItem = new HistoryItem();
+                $historyItem->ref = $match['ref'];
+                $historyItem->type = $match['type'];
                 $historyItem->scope = substr(substr($match['scope'], 0, strlen($match['scope']) - 1), 1);
-                $historyItem->text  = $match['text'];
+                $historyItem->text = $match['text'];
 
-                $command = 'git show -s --format=%B ' . $historyItem->ref;
-                $state   = $this->exec($command, 'unable to get history entry of ' . $historyItem->ref);
+                $command = 'git show -s --format=%B '.$historyItem->ref;
+                $state = $this->exec($command, 'unable to get history entry of '.$historyItem->ref);
 
-                if ($state->output && sizeof($state->output) > 2) {
+                if ($state->output && count($state->output) > 2) {
                     $entry = $state->output;
                     array_shift($entry);
 
-                    $description              = trim(implode(PHP_EOL, $entry));
+                    $description = trim(implode(PHP_EOL, $entry));
                     $historyItem->description = $description;
 
                     if (preg_match('/BREAKING CHANGE/', $historyItem->description)) {

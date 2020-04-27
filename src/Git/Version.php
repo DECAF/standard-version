@@ -20,7 +20,7 @@ class Version
      *
      * @return $this
      */
-    public function getNextVersion($history): Version
+    public function getNextVersion($history): self
     {
         foreach ($history as $k => $v) {
             if (preg_match('/BREAKING CHANGE/', $v->description)) {
@@ -37,7 +37,7 @@ class Version
         if ($this->isMajor) {
             $version->majorVersion++;
             $version->minorVersion = 0;
-            $version->patchLevel   = 0;
+            $version->patchLevel = 0;
         } elseif ($this->isMinor) {
             $version->minorVersion++;
             $version->patchLevel = 0;
@@ -53,6 +53,6 @@ class Version
      */
     public function getVersionString(): string
     {
-        return $this->majorVersion . '.' . $this->minorVersion . '.' . $this->patchLevel;
+        return $this->majorVersion.'.'.$this->minorVersion.'.'.$this->patchLevel;
     }
 }
