@@ -31,17 +31,17 @@ class Git
     protected string $tagPrefix;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTagPrefix(): string
+    public function getTagPrefix(): ?string
     {
         return $this->tagPrefix;
     }
 
     /**
-     * @param string $tagPrefix
+     * @param string|null $tagPrefix
      */
-    public function setTagPrefix(string $tagPrefix): void
+    public function setTagPrefix(?string $tagPrefix): void
     {
         $this->tagPrefix = $tagPrefix;
     }
