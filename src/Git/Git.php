@@ -28,20 +28,20 @@ class Git
     /**
      * @var string
      */
-    protected string $tagPrefix;
+    protected ?string $tagPrefix;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTagPrefix(): string
+    public function getTagPrefix(): ?string
     {
         return $this->tagPrefix;
     }
 
     /**
-     * @param  string  $tagPrefix
+     * @param  string|null  $tagPrefix
      */
-    public function setTagPrefix(string $tagPrefix): void
+    public function setTagPrefix(?string $tagPrefix): void
     {
         $this->tagPrefix = $tagPrefix;
     }
@@ -391,31 +391,46 @@ class Git
 
         $historyItems = [];
         foreach ($history as $k => $v) {
-            $pattern = '/^(?<ref>[^ ]+) (?<type>[a-z]+)(?<scope>\([a-z0-9-_.]+\))?:(?<text>.+)/i';
-
+            $ref     = null;
+            $pattern = '/^(?<ref>[^ ]+)/i';
             if (preg_match($pattern, $v, $match)) {
-                $historyItem        = new HistoryItem();
-                $historyItem->ref   = $match['ref'];
-                $historyItem->type  = $match['type'];
-                $historyItem->scope = substr(substr($match['scope'], 0, strlen($match['scope']) - 1), 1);
-                $historyItem->text  = $match['text'];
+                $ref = $match['ref'];
+            }
 
-                $command = 'git show -s --format=%B ' . $historyItem->ref;
-                $state   = $this->exec($command, 'unable to get history entry of ' . $historyItem->ref);
+            if ($ref) {
+                $description      = null;
+                $isBreakingChange = false;
+
+                // check for breaking change
+                $command = 'git show -s --format=%B ' . $ref;
+                $state   = $this->exec($command, 'unable to get history entry of ' . $ref);
 
                 if ($state->output && sizeof($state->output) > 2) {
                     $entry = $state->output;
                     array_shift($entry);
 
-                    $description              = trim(implode(PHP_EOL, $entry));
-                    $historyItem->description = $description;
+                    $description = trim(implode(PHP_EOL, $entry));
 
-                    if (preg_match('/BREAKING CHANGE/', $historyItem->description)) {
-                        $historyItem->isBreakingChange = true;
+                    if (preg_match('/BREAKING CHANGE/', $description)) {
+                        $isBreakingChange = true;
                     }
                 }
 
-                $historyItems[] = $historyItem;
+                $pattern = '/^(?<ref>[^ ]+) (?<type_scope>(?<type>[a-z]+)(?<scope>\([a-z0-9-_.]+\))?:)?(?<text>.+)/i';
+
+                if (preg_match($pattern, $v, $match)) {
+                    if ($isBreakingChange || !empty($match['type'])) {
+                        $historyItem                   = new HistoryItem();
+                        $historyItem->ref              = $match['ref'];
+                        $historyItem->type             = $match['type'] ?? null;
+                        $historyItem->scope            = $match['type'] ? substr(substr($match['scope'], 0, strlen($match['scope']) - 1), 1) : null;
+                        $historyItem->text             = $match['text'] ?? null;
+                        $historyItem->description      = $description;
+                        $historyItem->isBreakingChange = $isBreakingChange;
+
+                        $historyItems[] = $historyItem;
+                    }
+                }
             }
         }
 
