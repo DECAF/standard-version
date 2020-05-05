@@ -156,10 +156,11 @@ class Git
     }
 
     /**
-     * @param  string|null  $branch
+     * @param string|null $branch
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function getRemote(?string $branch = null): string
     {
@@ -168,15 +169,16 @@ class Git
         }
         $command = 'git config --get branch.'.$branch.'.remote';
         $state = $this->exec($command, 'unable to get config: branch.'.$branch.'.remote');
-        
+
         return $state->last;
     }
 
     /**
-     * @param  string  $branch
+     * @param string $branch
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function getRemoteUrl($branch = 'master'): string
     {
@@ -306,17 +308,17 @@ class Git
     }
 
     /**
-     * @param  string  $tag
+     * @param string      $tag
+     * @param string|null $branch
      *
-     * @param  string|null  $branch
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function pushTag(string $tag, ?string $branch = null): string
     {
         $remote = $this->getRemote($branch);
-        
+
         $command = 'git push '.$remote.' '.$tag;
         $state = $this->exec($command);
 
@@ -328,10 +330,11 @@ class Git
     }
 
     /**
-     * @param  string|null  $branch
+     * @param string|null $branch
+     *
+     * @throws Exception
      *
      * @return string
-     * @throws Exception
      */
     public function push(?string $branch = null): string
     {
