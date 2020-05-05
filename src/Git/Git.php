@@ -164,7 +164,7 @@ class Git
     {
         $command = 'git config --get branch.master.remote';
         $state = $this->exec($command, 'unable to get config: branch.master.remote');
-        
+
         $remote = $state->last;
 
         $command = 'git config --get remote.'.$remote.'.url';
