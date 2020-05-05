@@ -103,18 +103,18 @@ class Git
     {
         $this->repository = new Repository($extra);
 
-        $remoteOrigin = $this->getRemoteUrl();
+        $remoteUrl = $this->getRemoteUrl();
 
         switch (true) {
-            case strpos($remoteOrigin, 'github.com'):
+            case strpos($remoteUrl, 'github.com'):
                 $this->repository->provider = Github::class;
                 break;
-            case strpos($remoteOrigin, 'bitbucket.org'):
+            case strpos($remoteUrl, 'bitbucket.org'):
                 $this->repository->provider = Bitbucket::class;
                 break;
         }
 
-        $this->repository->init($remoteOrigin);
+        $this->repository->init($remoteUrl);
 
         return $this->repository;
     }
@@ -156,16 +156,31 @@ class Git
     }
 
     /**
-     * @throws Exception
+     * @param  string|null  $branch
      *
      * @return string
+     * @throws Exception
      */
-    public function getRemoteUrl(): string
+    public function getRemote(?string $branch = null): string
     {
-        $command = 'git config --get branch.master.remote';
-        $state = $this->exec($command, 'unable to get config: branch.master.remote');
+        if (!$branch) {
+            $branch = $this->getCurrentBranch();
+        }
+        $command = 'git config --get branch.'.$branch.'.remote';
+        $state = $this->exec($command, 'unable to get config: branch.'.$branch.'.remote');
+        
+        return $state->last;
+    }
 
-        $remote = $state->last;
+    /**
+     * @param  string  $branch
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getRemoteUrl($branch = 'master'): string
+    {
+        $remote = $this->getRemote($branch);
 
         $command = 'git config --get remote.'.$remote.'.url';
         $state = $this->exec($command, 'unable to get config: remote.'.$remote.'.url');
@@ -291,15 +306,18 @@ class Git
     }
 
     /**
-     * @param string $tag
+     * @param  string  $tag
      *
-     * @throws Exception
+     * @param  string|null  $branch
      *
      * @return string
+     * @throws Exception
      */
-    public function pushTag(string $tag): string
+    public function pushTag(string $tag, ?string $branch = null): string
     {
-        $command = 'git push origin '.$tag;
+        $remote = $this->getRemote($branch);
+        
+        $command = 'git push '.$remote.' '.$tag;
         $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
@@ -310,17 +328,20 @@ class Git
     }
 
     /**
-     * @throws Exception
+     * @param  string|null  $branch
      *
      * @return string
+     * @throws Exception
      */
-    public function push(): string
+    public function push(?string $branch = null): string
     {
-        $command = 'git push origin';
+        $remote = $this->getRemote($branch);
+
+        $command = 'git push '.$remote;
         $state = $this->exec($command);
 
         if ($state->exitCode !== 0) {
-            throw new Exception('unable to push to origin');
+            throw new Exception('unable to push to '.$remote);
         }
 
         return $state->last;
