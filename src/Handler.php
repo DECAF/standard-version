@@ -181,13 +181,13 @@ class Handler
 
         $git->setTagPrefix($extra['tag-prefix'] ?? null);
 
-        $repository = $git->initRepository($extra);
-
         $currentBranch = $git->getCurrentBranch();
 
         if ($currentBranch !== 'master') {
             throw new Exception('Please checkout "master" branch first! You are currently on "'.$currentBranch.'"');
         }
+
+        $repository = $git->initRepository($extra);
 
         $latestTag = $git->getLatestTag();
 
@@ -251,7 +251,7 @@ class Handler
             }
 
             if ($this->getGitPush()) {
-                $remoteOrigin = $git->getRemoteOrigin();
+                $remoteUrl = $git->getRemoteUrl();
                 $tag = $git->getTagPrefix().$nextVersion->getVersionString();
 
                 $git->pushTag($tag);
@@ -260,7 +260,7 @@ class Handler
 
                 $git->push();
 
-                $output->writeln('pushed to origin: '.$remoteOrigin);
+                $output->writeln('pushed to origin: '.$remoteUrl);
             }
         }
     }

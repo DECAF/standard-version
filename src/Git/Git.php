@@ -103,7 +103,7 @@ class Git
     {
         $this->repository = new Repository($extra);
 
-        $remoteOrigin = $this->getRemoteOrigin();
+        $remoteOrigin = $this->getRemoteUrl();
 
         switch (true) {
             case strpos($remoteOrigin, 'github.com'):
@@ -160,10 +160,15 @@ class Git
      *
      * @return string
      */
-    public function getRemoteOrigin(): string
+    public function getRemoteUrl(): string
     {
-        $command = 'git config --get remote.origin.url';
-        $state = $this->exec($command, 'unable to get current branch');
+        $command = 'git config --get branch.master.remote';
+        $state = $this->exec($command, 'unable to get config: branch.master.remote');
+        
+        $remote = $state->last;
+
+        $command = 'git config --get remote.'.$remote.'.url';
+        $state = $this->exec($command, 'unable to get config: remote.'.$remote.'.url');
 
         return $state->last;
     }
