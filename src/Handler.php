@@ -220,7 +220,7 @@ class Handler
         $question->setMaxAttempts(1);
 
         if (!$dialog->ask($input, $output, $question)) {
-            return 1;
+            return;
         }
 
         if ($this->getModifyChangelog()) {
