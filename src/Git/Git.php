@@ -28,7 +28,28 @@ class Git
     /**
      * @var string
      */
+    protected ?string $reporitoryFolder;
+
+    /**
+     * @var string
+     */
     protected ?string $tagPrefix;
+
+    /**
+     * @return string
+     */
+    public function getReporitoryFolder(): string
+    {
+        return $this->reporitoryFolder;
+    }
+
+    /**
+     * @param  string  $reporitoryFolder
+     */
+    public function setReporitoryFolder(string $reporitoryFolder): void
+    {
+        $this->reporitoryFolder = $reporitoryFolder;
+    }
 
     /**
      * @return string|null
