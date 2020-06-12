@@ -7,9 +7,9 @@ use Composer\Question\StrictConfirmationQuestion;
 use Decaf\StandardVersion\Generators\Markdown;
 use Decaf\StandardVersion\Git\Git;
 use Exception;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\QuestionHelper;
 
 class Handler
 {
@@ -89,7 +89,7 @@ class Handler
     }
 
     /**
-     * @param  bool  $repositoryFolder
+     * @param bool $repositoryFolder
      */
     public function setRepositoryFolder($repositoryFolder): void
     {
@@ -218,11 +218,11 @@ class Handler
         $dialog = new QuestionHelper();
         $question = new StrictConfirmationQuestion('Do you want to continue? [YES|no]');
         $question->setMaxAttempts(1);
-        
+
         if (!$dialog->ask($input, $output, $question)) {
             return 1;
         }
-        
+
         if ($this->getModifyChangelog()) {
             if (!file_exists('CHANGELOG.md')) {
                 $output->writeln('no CHANGELOG.md found. Creating default template');

@@ -44,7 +44,7 @@ class Git
     }
 
     /**
-     * @param  string  $reporitoryFolder
+     * @param string $reporitoryFolder
      */
     public function setReporitoryFolder(string $reporitoryFolder): void
     {

@@ -35,7 +35,7 @@ class StandardVersionCommand extends BaseCommand
         $handler->setComposer($this->getComposer());
 
         if ($input->hasArgument('folder')) {
-            $folder = $input->getArgument('folder'); 
+            $folder = $input->getArgument('folder');
 
             $output->writeln('* folder: '.$folder[0]);
 
