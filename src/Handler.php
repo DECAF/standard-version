@@ -3,11 +3,13 @@
 namespace Decaf\StandardVersion;
 
 use Composer\Composer;
+use Composer\Question\StrictConfirmationQuestion;
 use Decaf\StandardVersion\Generators\Markdown;
 use Decaf\StandardVersion\Git\Git;
 use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 class Handler
 {
@@ -32,9 +34,9 @@ class Handler
     protected bool $gitPush = true;
 
     /**
-     * @var bool
+     * @var string
      */
-    protected bool $dryRun = false;
+    protected string $repositoryFolder = './';
 
     /**
      * @var InputInterface|null
@@ -79,6 +81,22 @@ class Handler
     }
 
     /**
+     * @return string
+     */
+    public function getRepositoryFolder(): string
+    {
+        return $this->repositoryFolder;
+    }
+
+    /**
+     * @param  bool  $repositoryFolder
+     */
+    public function setRepositoryFolder($repositoryFolder): void
+    {
+        $this->repositoryFolder = $repositoryFolder;
+    }
+
+    /**
      * @return bool
      */
     public function getTagVersion(): bool
@@ -108,22 +126,6 @@ class Handler
     public function setGitPush(bool $gitPush): void
     {
         $this->gitPush = $gitPush;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getDryRun(): bool
-    {
-        return $this->dryRun;
-    }
-
-    /**
-     * @param bool $dryRun
-     */
-    public function setDryRun(bool $dryRun): void
-    {
-        $this->dryRun = $dryRun;
     }
 
     /**
@@ -163,6 +165,7 @@ class Handler
      */
     public function process(): void
     {
+        $input = $this->getInput();
         $output = $this->getOutput();
         $composer = $this->getComposer();
 
@@ -176,6 +179,8 @@ class Handler
         $git = new Git();
 
         $git->checkCredentials();
+
+        $git->changeCurrentFolder($this->getRepositoryFolder());
 
         $git->checkWorkingCopy();
 
@@ -206,62 +211,68 @@ class Handler
         $markdown = new Markdown();
         $markdown = $markdown->generate($repository, $currentVersion, $nextVersion, $history);
 
-        if ($this->getDryRun()) {
-            $output->writeln('****************************************************************************');
-            $output->writeln($markdown);
-            $output->writeln('****************************************************************************');
-        } else {
-            if ($this->getModifyChangelog()) {
-                if (!file_exists('CHANGELOG.md')) {
-                    $output->writeln('no CHANGELOG.md found. Creating default template');
-                    copy(__DIR__.'/../template/CHANGELOG.md', 'CHANGELOG.md');
+        $output->writeln('****************************************************************************');
+        $output->writeln($markdown);
+        $output->writeln('****************************************************************************');
 
-                    $changelog = file_get_contents('CHANGELOG.md');
+        $dialog = new QuestionHelper();
+        $question = new StrictConfirmationQuestion('Do you want to continue? [YES|no]');
+        $question->setMaxAttempts(1);
+        
+        if (!$dialog->ask($input, $output, $question)) {
+            return 1;
+        }
+        
+        if ($this->getModifyChangelog()) {
+            if (!file_exists('CHANGELOG.md')) {
+                $output->writeln('no CHANGELOG.md found. Creating default template');
+                copy(__DIR__.'/../template/CHANGELOG.md', 'CHANGELOG.md');
 
-                    $content = $changelog.$markdown;
-                } else {
-                    $changelog = file_get_contents('CHANGELOG.md');
+                $changelog = file_get_contents('CHANGELOG.md');
 
-                    // check if version already in Changelog
-                    if (preg_match('#<a name="'.$nextVersion->getVersionString().'"></a>#', $changelog)) {
-                        throw new Exception('version "'.$nextVersion->getVersionString().'" already exists in CHANGELOG.md!');
-                    }
+                $content = $changelog.$markdown;
+            } else {
+                $changelog = file_get_contents('CHANGELOG.md');
 
-                    $content = preg_replace('/<a name=/', $markdown.'<a name=', $changelog, 1);
+                // check if version already in Changelog
+                if (preg_match('#<a name="'.$nextVersion->getVersionString().'"></a>#', $changelog)) {
+                    throw new Exception('version "'.$nextVersion->getVersionString().'" already exists in CHANGELOG.md!');
                 }
 
-                file_put_contents('CHANGELOG.md', $content);
-
-                $output->writeln('CHANGELOG.md written');
-
-                $git->add('CHANGELOG.md');
-
-                $output->writeln('CHANGELOG.md added');
-
-                $git->commit('chore: CHANGELOG.md added');
-
-                $output->writeln('CHANGELOG.md committed');
+                $content = preg_replace('/<a name=/', $markdown.'<a name=', $changelog, 1);
             }
 
-            if ($this->getTagVersion()) {
-                $tag = $git->getTagPrefix().$nextVersion->getVersionString();
-                $git->tag($tag);
+            file_put_contents('CHANGELOG.md', $content);
 
-                $output->writeln('tagged as version: '.$tag);
-            }
+            $output->writeln('CHANGELOG.md written');
 
-            if ($this->getGitPush()) {
-                $remoteUrl = $git->getRemoteUrl();
-                $tag = $git->getTagPrefix().$nextVersion->getVersionString();
+            $git->add('CHANGELOG.md');
 
-                $git->pushTag($tag);
+            $output->writeln('CHANGELOG.md added');
 
-                $output->writeln('pushed tag: '.$tag);
+            $git->commit('chore: CHANGELOG.md added');
 
-                $git->push();
+            $output->writeln('CHANGELOG.md committed');
+        }
 
-                $output->writeln('pushed to origin: '.$remoteUrl);
-            }
+        if ($this->getTagVersion()) {
+            $tag = $git->getTagPrefix().$nextVersion->getVersionString();
+            $git->tag($tag);
+
+            $output->writeln('tagged as version: '.$tag);
+        }
+
+        if ($this->getGitPush()) {
+            $remoteUrl = $git->getRemoteUrl();
+            $tag = $git->getTagPrefix().$nextVersion->getVersionString();
+
+            $git->pushTag($tag);
+
+            $output->writeln('pushed tag: '.$tag);
+
+            $git->push();
+
+            $output->writeln('pushed to origin: '.$remoteUrl);
         }
     }
 }

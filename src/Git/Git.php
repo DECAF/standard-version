@@ -138,6 +138,19 @@ class Git
     /**
      * @throws Exception
      */
+    public function changeCurrentFolder($folder): void
+    {
+        if (!file_exists($folder)) {
+            throw new Exception('Folder: '.$folder.' not found');
+        }
+        if (!chdir($folder)) {
+            throw new Exception('Folder: '.$folder.' not accessible');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     public function checkWorkingCopy(): void
     {
         $command = 'git status';
