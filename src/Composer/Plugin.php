@@ -23,7 +23,7 @@ class Plugin implements PluginInterface, Capable
     {
         //
     }
-    
+
     public function getCapabilities()
     {
         return [
