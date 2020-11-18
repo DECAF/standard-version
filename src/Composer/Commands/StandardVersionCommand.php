@@ -4,6 +4,7 @@ namespace Decaf\StandardVersion\Composer\Commands;
 
 use Composer\Command\BaseCommand;
 use Decaf\StandardVersion\Handler;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,7 +19,7 @@ class StandardVersionCommand extends BaseCommand
 
         $this->setDefinition(
             new InputDefinition([
-                new InputOption('dry-run', 'r', InputOption::VALUE_OPTIONAL),
+                new InputArgument('folder', InputOption::VALUE_OPTIONAL),
                 new InputOption('composer', 'c', InputOption::VALUE_OPTIONAL),
                 new InputOption('tag', 't', InputOption::VALUE_OPTIONAL),
                 new InputOption('push', 'p', InputOption::VALUE_OPTIONAL),
@@ -33,10 +34,12 @@ class StandardVersionCommand extends BaseCommand
         $handler->setOutput($output);
         $handler->setComposer($this->getComposer());
 
-        if ($input->hasParameterOption('--dry-run') || $input->hasParameterOption('-r')) {
-            $output->writeln('DRY RUN enabled!');
+        if ($input->hasArgument('folder')) {
+            $folder = $input->getArgument('folder');
 
-            $handler->setDryRun(true);
+            $output->writeln('* folder: '.$folder[0]);
+
+            $handler->setRepositoryFolder($folder[0]);
         }
 
         if ($input->hasParameterOption('--changelog') || $input->hasParameterOption('-c') ||

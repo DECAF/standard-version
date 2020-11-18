@@ -44,7 +44,7 @@ class Git
     }
 
     /**
-     * @param  string  $reporitoryFolder
+     * @param string $reporitoryFolder
      */
     public function setReporitoryFolder(string $reporitoryFolder): void
     {
@@ -153,6 +153,19 @@ class Git
 
         if ($state1->exitCode !== 0 || $state2->exitCode !== 0) {
             throw new Exception('Please set your git credentials:'.PHP_EOL.'   git config --global user.email "foo@bar"'.PHP_EOL.'   git config --global user.name "Foo Bar"');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function changeCurrentFolder($folder): void
+    {
+        if (!file_exists($folder)) {
+            throw new Exception('Folder: '.$folder.' not found');
+        }
+        if (!chdir($folder)) {
+            throw new Exception('Folder: '.$folder.' not accessible');
         }
     }
 
