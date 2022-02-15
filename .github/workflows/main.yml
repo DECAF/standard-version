@@ -33,7 +33,7 @@ jobs:
           tag_name: v${{ github.event.inputs.tag }}
           release_name: v${{ github.event.inputs.tag }}
           body: |
-            # ${{ steps.date.outputs.date }}
+            ### ${{ steps.date.outputs.date }}
             Changes in this Release
             - First Change
             - Second Change
