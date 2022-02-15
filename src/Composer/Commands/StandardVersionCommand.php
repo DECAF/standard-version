@@ -23,6 +23,7 @@ class StandardVersionCommand extends BaseCommand
                 new InputOption('composer', 'c', InputOption::VALUE_OPTIONAL),
                 new InputOption('tag', 't', InputOption::VALUE_OPTIONAL),
                 new InputOption('push', 'p', InputOption::VALUE_OPTIONAL),
+                new InputOption('force', 'f', InputOption::VALUE_OPTIONAL),
             ])
         );
     }
@@ -66,6 +67,12 @@ class StandardVersionCommand extends BaseCommand
             $output->writeln(' * push to origin enabled');
 
             $handler->setGitPush(true);
+        }
+
+        if ($input->hasParameterOption('--force') || $input->hasParameterOption('-f')) {
+            $output->writeln(' * force enabled');
+
+            $handler->setForce(true);
         }
 
         $output->writeln('starting ...', OutputInterface::VERBOSITY_VERBOSE);
