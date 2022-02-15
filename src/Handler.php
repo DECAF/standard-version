@@ -188,8 +188,8 @@ class Handler
 
         $currentBranch = $git->getCurrentBranch();
 
-        if ($currentBranch !== 'master') {
-            throw new Exception('Please checkout "master" branch first! You are currently on "'.$currentBranch.'"');
+        if ($currentBranch !== 'main' || $currentBranch !== 'master') {
+            throw new Exception('Please checkout "main/master" branch first! You are currently on "'.$currentBranch.'"');
         }
 
         $repository = $git->initRepository($extra);
