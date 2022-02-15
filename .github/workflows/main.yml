@@ -1,0 +1,72 @@
+name: Create new release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release/tag name without v'
+        required: true
+      debug:
+        description: 'activate debug mode'
+        default: 'false'
+        required: false
+
+jobs:
+  build:
+    name: Create new release
+    runs-on: ubuntu-latest
+
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - 
+        name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ github.event.inputs.tag }}
+          release_name: v${{ github.event.inputs.tag }}
+          body: |
+            # ${{ steps.date.outputs.date }}
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+      - name: Debug
+        if: github.event.inputs.debug == 'true'
+        env:
+          ENV_CONTEXT: ${{ toJson(env) }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          JOB_CONTEXT: ${{ toJson(job) }}
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: |
+          echo "ENV_CONTEXT"
+          echo "$ENV_CONTEXT"
+          echo ""
+          echo "GITHUB_CONTEXT"
+          echo "$GITHUB_CONTEXT"
+          echo ""
+          echo "JOB_CONTEXT"
+          echo "$JOB_CONTEXT"
+          echo ""
+          echo "STEPS_CONTEXT"
+          echo "$STEPS_CONTEXT"
+          echo ""
+          echo "RUNNER_CONTEXT"
+          echo "$RUNNER_CONTEXT"
+          echo ""
+          echo "STRATEGY_CONTEXT"
+          echo "$STRATEGY_CONTEXT"
+          echo ""
+          echo "MATRIX_CONTEXT"
+          echo "$MATRIX_CONTEXT"
