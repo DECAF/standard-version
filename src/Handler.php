@@ -34,6 +34,11 @@ class Handler
     protected bool $gitPush = true;
 
     /**
+     * @var bool
+     */
+    protected bool $force = false;
+
+    /**
      * @var string
      */
     protected string $repositoryFolder = './';
@@ -129,6 +134,22 @@ class Handler
     }
 
     /**
+     * @return bool
+     */
+    public function getForce(): bool
+    {
+        return $this->force;
+    }
+
+    /**
+     * @param bool $force
+     */
+    public function setForce(bool $force): void
+    {
+        $this->force = $force;
+    }
+
+    /**
      * @return InputInterface
      */
     public function getInput()
@@ -215,12 +236,14 @@ class Handler
         $output->writeln($markdown);
         $output->writeln('****************************************************************************');
 
-        $dialog = new QuestionHelper();
-        $question = new StrictConfirmationQuestion('Do you want to continue? [YES|no]');
-        $question->setMaxAttempts(1);
+        if (!$this->getForce()) {
+            $dialog = new QuestionHelper();
+            $question = new StrictConfirmationQuestion('Do you want to continue? [YES|no]');
+            $question->setMaxAttempts(1);
 
-        if (!$dialog->ask($input, $output, $question)) {
-            return;
+            if (!$dialog->ask($input, $output, $question)) {
+                return;
+            }
         }
 
         if ($this->getModifyChangelog()) {
