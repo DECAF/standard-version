@@ -209,7 +209,7 @@ class Handler
 
         $currentBranch = $git->getCurrentBranch();
 
-        if ($currentBranch !== 'main' || $currentBranch !== 'master') {
+        if ($currentBranch !== 'main' && $currentBranch !== 'master') {
             throw new Exception('Please checkout "main/master" branch first! You are currently on "'.$currentBranch.'"');
         }
 
