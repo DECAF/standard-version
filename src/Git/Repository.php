@@ -29,7 +29,7 @@ class Repository
      */
     public function init(string $url): void
     {
-        $pattern = '#(?<host>[a-z-\.]+)[/:](?<org>[^/]+)/(?<repo>[^\.]+).git$#i';
+        $pattern = '#(?<host>[a-z-\.]+)[/:](?<org>[^/]+)/(?<repo>[^\.]+)(\.git)?$#i';
 
         if (preg_match($pattern, $url, $match)) {
             $this->host = $match['host'];
