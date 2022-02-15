@@ -23,7 +23,7 @@ class Version
     public function getNextVersion($history): self
     {
         foreach ($history as $k => $v) {
-            if (preg_match('/BREAKING CHANGE/', $v->description)) {
+            if (is_string($v->description) && preg_match('/BREAKING CHANGE/', $v->description)) {
                 $this->isMajor = true;
             } elseif (isset($v->type) && in_array($v->type, ['feat'])) {
                 $this->isMinor = true;
