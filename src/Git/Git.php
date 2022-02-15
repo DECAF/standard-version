@@ -214,7 +214,7 @@ class Git
      *
      * @return string
      */
-    public function getRemoteUrl($branch = 'master'): string
+    public function getRemoteUrl($branch = 'main'): string
     {
         $remote = $this->getRemote($branch);
 
