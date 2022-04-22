@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StandardVersionCommand extends BaseCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('standard-version');
         $this->setDescription('Process standard-version command to current project.');
@@ -28,7 +28,7 @@ class StandardVersionCommand extends BaseCommand
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $handler = new Handler();
         $handler->setInput($input);
@@ -78,5 +78,7 @@ class StandardVersionCommand extends BaseCommand
         $output->writeln('starting ...', OutputInterface::VERBOSITY_VERBOSE);
 
         $handler->process();
+        
+        return 0;
     }
 }
