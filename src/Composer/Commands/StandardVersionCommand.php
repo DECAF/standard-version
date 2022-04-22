@@ -78,7 +78,7 @@ class StandardVersionCommand extends BaseCommand
         $output->writeln('starting ...', OutputInterface::VERBOSITY_VERBOSE);
 
         $handler->process();
-        
+
         return 0;
     }
 }
